@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login e Cadastro</title>
-   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -28,7 +33,7 @@
 
     <!-- Form Cadastro -->
     <form id="signup-form" class="hidden">
-      <h2>Cadastrar usuario</h2>
+      <h2>Cadastrar usuário</h2>
       <div class="form__field">
         <label for="signup-username">Usuário</label>
         <input id="signup-username" type="text" name="username" placeholder="Escolha um usuário" required />
@@ -49,35 +54,22 @@
     </form>
   </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-   // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    const firebaseConfig = {
+      apiKey: "AIzaSyDeqH-QlJT-qdpemYYSzb2eKILj55DkvvQ",
+      authDomain: "infoella.firebaseapp.com",
+      projectId: "infoella",
+      storageBucket: "infoella.appspot.com",
+      messagingSenderId: "515488310887",
+      appId: "1:515488310887:web:5de4a8f3a862fe6ae456c2",
+      measurementId: "G-7G5ZD2JF7V"
+    };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDeqH-QlJT-qdpemYYSzb2eKILj55DkvvQ",
-  authDomain: "infoella.firebaseapp.com",
-  projectId: "infoella",
-  storageBucket: "infoella.firebasestorage.app",
-  messagingSenderId: "515488310887",
-  appId: "1:515488310887:web:5de4a8f3a862fe6ae456c2",
-  measurementId: "G-7G5ZD2JF7V"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -99,24 +91,22 @@ const analytics = getAnalytics(app);
       loginForm.classList.remove("hidden");
     });
 
-    // Login com Firebase Auth
+    // Login
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const email = e.target.email.value;
       const password = e.target.password.value;
 
       auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
+        .then(() => {
           alert("Login realizado com sucesso!");
-          // Aqui você pode redirecionar ou carregar outra página
-          // window.location.href = "dashboard.html";
         })
         .catch((error) => {
           alert("Erro ao logar: " + error.message);
         });
     });
 
-    // Cadastro com Firebase Auth + salva username no Firestore
+    // Cadastro
     signupForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const username = e.target.username.value;
@@ -126,8 +116,6 @@ const analytics = getAnalytics(app);
       auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-
-          // Salvar o username no Firestore, na coleção "users", documento com id do usuário
           return db.collection("users").doc(user.uid).set({
             username: username,
             email: email,
