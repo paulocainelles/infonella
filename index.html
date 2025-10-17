@@ -91,20 +91,27 @@
       loginForm.classList.remove("hidden");
     });
 
-    // Login
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = e.target.email.value;
-      const password = e.target.password.value;
+    // Login com Firebase Auth
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          alert("Login realizado com sucesso!");
-        })
-        .catch((error) => {
-          alert("Erro ao logar: " + error.message);
-        });
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      // redireciona para a página principal protegida
+      window.location.href = "dashboard.html";
+    })
+    .catch((error) => {
+      if (error.code === 'auth/wrong-password') {
+        alert('Senha inválida.');
+      } else if (error.code === 'auth/user-not-found') {
+        alert('Usuário não encontrado. Cadastre-se primeiro.');
+      } else {
+        alert("Erro ao logar: " + error.message);
+      }
     });
+});
 
     // Cadastro
     signupForm.addEventListener("submit", (e) => {

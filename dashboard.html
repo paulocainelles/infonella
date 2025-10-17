@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Área Restrita</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* estilo rápido para a dashboard */
+    .wrap { max-width: 900px; margin: 2rem auto; padding: 1.5rem; background:#222; color:#eee; border-radius:8px; }
+    .header { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .username { font-weight:700; color:#ffd; }
+    .logout-btn { background:#ea4c88; color:#fff; padding:0.6rem 1rem; border-radius:6px; border:none; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>Bem-vindo(a), <span id="display-name">...</span></h1>
+        <p id="display-email" style="opacity:.8"></p>
+      </div>
+      <div>
+        <button id="logout-btn" class="logout-btn">Sair</button>
+      </div>
+    </div>
+
+    <hr style="margin:1rem 0; border-color:#333">
+
+    <section id="main-content">
+      <!-- Conteúdo protegido: só aparece se o usuário estiver autenticado -->
+      <p>Conteúdo da ferramenta principal (apenas para usuários logados).</p>
+      <!-- você pode carregar aqui suas funcionalidades -->
+    </section>
+  </div>
+
+  <!-- Firebase compat SDKs (mesma versão que você usa) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Mesma config do seu projeto (cuidado: deixe isso seguro em produção)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDeqH-QlJT-qdpemYYSzb2eKILj55DkvvQ",
+      authDomain: "infoella.firebaseapp.com",
+      projectId: "infoella",
+      storageBucket: "infoella.appspot.com",
+      messagingSenderId: "515488310887",
+      appId: "1:515488310887:web:5de4a8f3a862fe6ae456c2",
+      measurementId: "G-7G5ZD2JF7V"
+    };
+
+    // Inicializa Firebase (verifica se já não foi inicializado por outra página)
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const displayNameEl = document.getElementById('display-name');
+    const displayEmailEl = document.getElementById('display-email');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    // Observa o estado de autenticação
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // não autenticado -> volta para a tela de login
+        window.location.href = 'index.html'; // ajuste o nome do arquivo do login se for diferente
+        return;
+      }
+
+      // usuário autenticado -> mostrar dados
+      displayEmailEl.textContent = user.email;
+
+      // busca username no Firestore (coleção 'users', doc com id = uid)
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          displayNameEl.textContent = data.username || user.email.split('@')[0];
+        } else {
+          // sem documento: usa parte do email como fallback
+          displayNameEl.textContent = user.email.split('@')[0];
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados do usuário:', err);
+        displayNameEl.textContent = user.email.split('@')[0];
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await auth.signOut();
+        window.location.href = 'index.html';
+      } catch (err) {
+        alert('Erro ao sair: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
