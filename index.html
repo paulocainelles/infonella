@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login e Cadastro</title>
+   <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Form Login -->
+    <form id="login-form">
+      <h2>Login</h2>
+      <div class="form__field">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" name="email" placeholder="Seu email" required />
+      </div>
+      <div class="form__field">
+        <label for="login-password">Senha</label>
+        <input id="login-password" type="password" name="password" placeholder="Sua senha" required />
+      </div>
+      <input type="submit" value="Entrar" />
+      <p class="switch">
+        Não tem conta?
+        <a href="#" id="show-signup">Cadastre-se</a>
+      </p>
+    </form>
+
+    <!-- Form Cadastro -->
+    <form id="signup-form" class="hidden">
+      <h2>Cadastro</h2>
+      <div class="form__field">
+        <label for="signup-username">Usuário</label>
+        <input id="signup-username" type="text" name="username" placeholder="Escolha um usuário" required />
+      </div>
+      <div class="form__field">
+        <label for="signup-email">Email</label>
+        <input id="signup-email" type="email" name="email" placeholder="Seu email" required />
+      </div>
+      <div class="form__field">
+        <label for="signup-password">Senha</label>
+        <input id="signup-password" type="password" name="password" placeholder="Sua senha" required />
+      </div>
+      <input type="submit" value="Cadastrar" />
+      <p class="switch">
+        Já tem conta?
+        <a href="#" id="show-login">Entre aqui</a>
+      </p>
+    </form>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+   // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDeqH-QlJT-qdpemYYSzb2eKILj55DkvvQ",
+  authDomain: "infoella.firebaseapp.com",
+  projectId: "infoella",
+  storageBucket: "infoella.firebasestorage.app",
+  messagingSenderId: "515488310887",
+  appId: "1:515488310887:web:5de4a8f3a862fe6ae456c2",
+  measurementId: "G-7G5ZD2JF7V"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const showSignup = document.getElementById("show-signup");
+    const showLogin = document.getElementById("show-login");
+
+    showSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+      loginForm.classList.add("hidden");
+      signupForm.classList.remove("hidden");
+    });
+
+    showLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      signupForm.classList.add("hidden");
+      loginForm.classList.remove("hidden");
+    });
+
+    // Login com Firebase Auth
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Login realizado com sucesso!");
+          // Aqui você pode redirecionar ou carregar outra página
+          // window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("Erro ao logar: " + error.message);
+        });
+    });
+
+    // Cadastro com Firebase Auth + salva username no Firestore
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = e.target.username.value;
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          // Salvar o username no Firestore, na coleção "users", documento com id do usuário
+          return db.collection("users").doc(user.uid).set({
+            username: username,
+            email: email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        })
+        .then(() => {
+          alert("Cadastro realizado com sucesso!");
+          signupForm.reset();
+          signupForm.classList.add("hidden");
+          loginForm.classList.remove("hidden");
+        })
+        .catch((error) => {
+          alert("Erro ao cadastrar: " + error.message);
+        });
+    });
+  </script>
+</body>
+</html>
